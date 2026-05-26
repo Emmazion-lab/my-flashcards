@@ -9,10 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAddCard } from "../hooks/useQueries";
+import { useAddCard, useTranslateText } from "../hooks/useQueries";
 import { MAX_CARD_TEXT_LENGTH } from "../utils/constants";
 
 const PARTS_OF_SPEECH = [
@@ -36,7 +36,10 @@ export function AddCardForm({ deckId }: AddCardFormProps) {
   const [exampleSentence, setExampleSentence] = useState("");
   const [exampleTranslation, setExampleTranslation] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [translateError, setTranslateError] = useState("");
   const { mutate: addCard, isPending } = useAddCard();
+  const { mutate: translateText, isPending: isTranslating } =
+    useTranslateText();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,15 +86,65 @@ export function AddCardForm({ deckId }: AddCardFormProps) {
           <Label htmlFor="card-front" className="text-xs text-muted-foreground">
             French term
           </Label>
-          <Input
-            id="card-front"
-            value={front}
-            onChange={(e) => setFront(e.target.value)}
-            placeholder="e.g. Bonjour"
-            maxLength={MAX_CARD_TEXT_LENGTH}
-            disabled={isPending}
-            data-ocid="add_card.front_input"
-          />
+          <div className="flex gap-1.5">
+            <Input
+              id="card-front"
+              value={front}
+              onChange={(e) => {
+                setFront(e.target.value);
+                setTranslateError("");
+              }}
+              placeholder="e.g. Bonjour"
+              maxLength={MAX_CARD_TEXT_LENGTH}
+              disabled={isPending || isTranslating}
+              data-ocid="add_card.front_input"
+              className="flex-1"
+            />
+            <button
+              type="button"
+              title="Auto-translate"
+              disabled={isPending || isTranslating || !front.trim()}
+              onClick={() => {
+                if (!front.trim()) return;
+                setTranslateError("");
+                if (!showAdvanced) setShowAdvanced(true);
+                translateText(
+                  { frenchText: front.trim() },
+                  {
+                    onSuccess: (data) => {
+                      setBack(data.translation);
+                      setExampleSentence(
+                        data.exampleSentence +
+                          (data.usageTip
+                            ? `\n\n\ud83d\udca1 Usage tip: ${data.usageTip}`
+                            : ""),
+                      );
+                    },
+                    onError: (err) => {
+                      setTranslateError(err.message || "Translation failed");
+                    },
+                  },
+                );
+              }}
+              className="flex-shrink-0 h-10 w-10 rounded-md border border-input flex items-center justify-center hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-primary"
+              data-ocid="add_card.translate_button"
+              aria-label="Auto-translate French term"
+            >
+              {isTranslating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {translateError && (
+            <p
+              className="text-xs text-destructive"
+              data-ocid="add_card.translate_error"
+            >
+              {translateError}
+            </p>
+          )}
         </div>
         <div className="space-y-1">
           <Label htmlFor="card-back" className="text-xs text-muted-foreground">

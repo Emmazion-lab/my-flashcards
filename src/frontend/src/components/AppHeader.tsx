@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { Globe, Library, LogOut, Pencil } from "lucide-react";
+import { Globe, Library, LogOut, Pencil, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useProfile } from "../hooks/useQueries";
 import { ProfileSetupDialog } from "./ProfileSetupDialog";
@@ -89,6 +89,21 @@ export function AppHeader() {
               data-ocid="nav.browse_link"
             >
               Browse
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ to: "/translator" })}
+              className={cn(
+                "text-sm",
+                isActive("/translator")
+                  ? "text-white font-medium bg-white/20 hover:bg-white/25"
+                  : "text-white/70 hover:text-white hover:bg-white/10",
+              )}
+              data-ocid="nav.translator_link"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Translator
             </Button>
           </nav>
         </div>
@@ -180,6 +195,19 @@ export function AppHeader() {
           >
             <Globe className="h-5 w-5" />
             Browse
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/translator" })}
+            className={cn(
+              "flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors",
+              isActive("/translator") ? "font-medium" : "text-muted-foreground",
+            )}
+            style={isActive("/translator") ? { color: "#003f87" } : {}}
+            data-ocid="nav.translator_tab"
+          >
+            <Sparkles className="h-5 w-5" />
+            Translate
           </button>
         </nav>
       </div>

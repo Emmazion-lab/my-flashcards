@@ -17,6 +17,7 @@ import { StudyLayout } from "./components/StudyLayout";
 import { StudyModeSelector } from "./components/StudyModeSelector";
 import { TestMode } from "./components/TestMode";
 import { WriteMode } from "./components/WriteMode";
+import { TranslatorPage } from "./pages/TranslatorPage";
 
 function NotFound() {
   return (
@@ -97,6 +98,12 @@ const studyRoute = createRoute({
   component: PublicStudyModeRouter,
 });
 
+const translatorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/translator",
+  component: TranslatorPage,
+});
+
 function PublicStudyModeSelector() {
   return (
     <StudyLayout>
@@ -130,6 +137,7 @@ function PublicStudyModeRouter() {
 
 const routeTree = rootRoute.addChildren([
   browseRoute,
+  translatorRoute,
   publicDeckRoute,
   studyModeRoute,
   studyRoute,

@@ -9,6 +9,8 @@ import Runtime "mo:core/Runtime";
 import Storage "mo:caffeineai-object-storage/Storage";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
+import AiTranslatorMixin "mixins/ai-translator-api";
+import AiTranslatorLib "lib/ai-translator";
 
 
 
@@ -121,6 +123,15 @@ actor {
   ];
 
   let validModes : [Text] = ["flashcards", "learn", "test", "match", "write"];
+
+  // AI Translator state
+  // adminPrincipalState starts as the anonymous principal; the first caller to
+  // setOpenAIKey who supplies a key claims the admin role (see mixin).
+  let aiAdminPrincipalState = { var value : ?Principal = null };
+  let openAIKeyState = { var value : ?Text = null };
+  let translationCache : Map.Map<Text, AiTranslatorLib.TranslationResult> = Map.empty();
+
+  include AiTranslatorMixin(aiAdminPrincipalState, openAIKeyState, translationCache);
 
   // State
 

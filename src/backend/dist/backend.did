@@ -1,3 +1,14 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
 type _ImmutableObjectStorageRefillResult = 
  record {
    success: opt bool;
@@ -21,6 +32,17 @@ type UserProfile =
    displayName: text;
    seeded: bool;
    username: text;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
  };
 type StudySession = 
  record {
@@ -144,9 +166,20 @@ service : {
   saveStudySession: (deckId: nat, cardsStudied: nat, correctCount: nat, mode:
    text) -> ();
   setDeckVisibility: (deckId: nat, visibility: Visibility) -> ();
+  setOpenAIKey: (key: text) -> ();
   setProfile: (username: text, displayName: text) -> ();
   shareDeckWith: (deckId: nat, username: text) -> ();
   toggleStarCard: (deckId: nat, cardId: nat) -> (bool);
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  translateText: (frenchText: text) ->
+   (variant {
+      err: text;
+      ok: record {
+            exampleSentence: text;
+            translation: text;
+            usageTip: text;
+          };
+    });
   unlikeDeck: (deckId: nat) -> ();
   unshareDeckWith: (deckId: nat, target: principal) -> ();
   updateCard: (deckId: nat, cardId: nat, front: text, back: text,

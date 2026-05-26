@@ -82,6 +82,24 @@ export const GetPublicDecksResult = IDL.Record({
   'total' : IDL.Nat,
   'decks' : IDL.Vec(PublicDeckInfo),
 });
+export const http_header = IDL.Record({
+  'value' : IDL.Text,
+  'name' : IDL.Text,
+});
+export const http_request_result = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const TransformationInput = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : http_request_result,
+});
+export const TransformationOutput = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
 
 export const idlService = IDL.Service({
   '_immutableObjectStorageBlobsAreLive' : IDL.Func(
@@ -192,9 +210,29 @@ export const idlService = IDL.Service({
   'requestDeckAccess' : IDL.Func([IDL.Nat], [], []),
   'saveStudySession' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Nat, IDL.Text], [], []),
   'setDeckVisibility' : IDL.Func([IDL.Nat, Visibility], [], []),
+  'setOpenAIKey' : IDL.Func([IDL.Text], [], []),
   'setProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'shareDeckWith' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'toggleStarCard' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Bool], []),
+  'transform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
+  'translateText' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Variant({
+          'ok' : IDL.Record({
+            'exampleSentence' : IDL.Text,
+            'usageTip' : IDL.Text,
+            'translation' : IDL.Text,
+          }),
+          'err' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
   'unlikeDeck' : IDL.Func([IDL.Nat], [], []),
   'unshareDeckWith' : IDL.Func([IDL.Nat, IDL.Principal], [], []),
   'updateCard' : IDL.Func(
@@ -292,6 +330,21 @@ export const idlFactory = ({ IDL }) => {
   const GetPublicDecksResult = IDL.Record({
     'total' : IDL.Nat,
     'decks' : IDL.Vec(PublicDeckInfo),
+  });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
   });
   
   return IDL.Service({
@@ -415,9 +468,29 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'setDeckVisibility' : IDL.Func([IDL.Nat, Visibility], [], []),
+    'setOpenAIKey' : IDL.Func([IDL.Text], [], []),
     'setProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'shareDeckWith' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'toggleStarCard' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Bool], []),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
+    'translateText' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Variant({
+            'ok' : IDL.Record({
+              'exampleSentence' : IDL.Text,
+              'usageTip' : IDL.Text,
+              'translation' : IDL.Text,
+            }),
+            'err' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
     'unlikeDeck' : IDL.Func([IDL.Nat], [], []),
     'unshareDeckWith' : IDL.Func([IDL.Nat, IDL.Principal], [], []),
     'updateCard' : IDL.Func(

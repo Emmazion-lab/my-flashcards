@@ -30,6 +30,7 @@ import {
   Check,
   Copy,
   Heart,
+  Languages,
   Layers,
   Loader2,
   Pencil,
@@ -49,7 +50,9 @@ import {
   useGetUserLikes,
   useLikeDeck,
   useRequestDeckAccess,
+  useTranslateText,
   useUnlikeDeck,
+  useUpdateCard,
   useUpdateDeck,
 } from "../hooks/useQueries";
 import {
@@ -90,9 +93,17 @@ export function DeckDetailPage({ isOwner = true }: { isOwner?: boolean }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [bulkTranslateOpen, setBulkTranslateOpen] = useState(false);
+  const [isBulkTranslating, setIsBulkTranslating] = useState(false);
+  const [bulkTranslateProgress, setBulkTranslateProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
 
   const { mutate: updateDeck, isPending: isUpdatingDeck } = useUpdateDeck();
   const { mutate: deleteDeck, isPending: isDeletingDeck } = useDeleteDeck();
+  const { mutateAsync: translateText } = useTranslateText();
+  const { mutateAsync: updateCardAsync } = useUpdateCard();
   const { mutate: duplicateDeck, isPending: isDuplicating } =
     useDuplicateDeck();
   const { data: userLikes } = useGetUserLikes();
@@ -164,6 +175,47 @@ export function DeckDetailPage({ isOwner = true }: { isOwner?: boolean }) {
         },
       },
     );
+  };
+
+  const eligibleCards =
+    cards?.filter((card) => !card.back || card.back.trim() === "") ?? [];
+
+  const handleBulkTranslate = async () => {
+    if (eligibleCards.length === 0) return;
+    setIsBulkTranslating(true);
+    setBulkTranslateProgress({ current: 0, total: eligibleCards.length });
+    setBulkTranslateOpen(false);
+
+    let successCount = 0;
+    for (let i = 0; i < eligibleCards.length; i++) {
+      const card = eligibleCards[i];
+      setBulkTranslateProgress({ current: i + 1, total: eligibleCards.length });
+      try {
+        const result = await translateText({ frenchText: card.front });
+        await updateCardAsync({
+          deckId,
+          cardId: card.id,
+          front: card.front,
+          back: result.translation,
+          pronunciation: card.pronunciation ?? null,
+          partOfSpeech: card.partOfSpeech ?? null,
+          exampleSentence:
+            result.exampleSentence || card.exampleSentence || null,
+          exampleTranslation: card.exampleTranslation ?? null,
+        });
+        successCount++;
+      } catch {
+        toast.error(`Failed to translate "${card.front}" — skipping`);
+      }
+    }
+
+    setIsBulkTranslating(false);
+    setBulkTranslateProgress(null);
+    if (successCount > 0) {
+      toast.success(
+        `${successCount} ${successCount === 1 ? "card" : "cards"} translated successfully`,
+      );
+    }
   };
 
   if (isDeckError || isCardsError) {
@@ -425,14 +477,38 @@ export function DeckDetailPage({ isOwner = true }: { isOwner?: boolean }) {
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">Cards</h3>
           {isOwner && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBulkImportOpen(true)}
-            >
-              <Upload className="h-4 w-4" />
-              Bulk Import
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {isBulkTranslating && bulkTranslateProgress && (
+                <span
+                  className="text-xs text-muted-foreground flex items-center gap-1"
+                  data-ocid="bulk_translate.loading_state"
+                >
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {bulkTranslateProgress.current} of{" "}
+                  {bulkTranslateProgress.total} translated…
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkTranslateOpen(true)}
+                disabled={isBulkTranslating || (cards?.length ?? 0) === 0}
+                data-ocid="bulk_translate.open_modal_button"
+                className="border-accent text-accent hover:bg-accent/10"
+              >
+                <Languages className="h-4 w-4" />
+                Bulk Translate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setBulkImportOpen(true)}
+                data-ocid="bulk_import.open_modal_button"
+              >
+                <Upload className="h-4 w-4" />
+                Bulk Import
+              </Button>
+            </div>
           )}
         </div>
 
@@ -491,6 +567,55 @@ export function DeckDetailPage({ isOwner = true }: { isOwner?: boolean }) {
             >
               {isDeletingDeck && <Loader2 className="h-4 w-4 animate-spin" />}
               {isDeletingDeck ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={bulkTranslateOpen} onOpenChange={setBulkTranslateOpen}>
+        <AlertDialogContent data-ocid="bulk_translate.dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5 text-accent" />
+              Bulk Translate Cards
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-1">
+                <p>
+                  {eligibleCards.length === 0
+                    ? "All cards already have an English translation."
+                    : `${eligibleCards.length} ${
+                        eligibleCards.length === 1 ? "card" : "cards"
+                      } without an English translation will be auto-translated.`}
+                </p>
+                {eligibleCards.length > 0 && (
+                  <p className="text-muted-foreground text-xs">
+                    Cards that already have a translation will be skipped. Each
+                    card will receive a translation, example sentence, and usage
+                    tip.
+                  </p>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isBulkTranslating}
+              data-ocid="bulk_translate.cancel_button"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleBulkTranslate();
+              }}
+              disabled={isBulkTranslating || eligibleCards.length === 0}
+              data-ocid="bulk_translate.confirm_button"
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Translate {eligibleCards.length}{" "}
+              {eligibleCards.length === 1 ? "Card" : "Cards"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

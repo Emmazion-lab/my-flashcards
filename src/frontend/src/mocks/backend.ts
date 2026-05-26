@@ -128,4 +128,7 @@ export const mockBackend: backendInterface = {
   updateCard: async () => undefined,
   updateCardImages: async () => undefined,
   updateDeck: async () => sampleDecks[0],
+  setOpenAIKey: async () => undefined,
+  transform: async (input: any) => input.response,
+  translateText: async () => ({ __kind__: "ok" as const, ok: { translation: "hello", exampleSentence: "Bonjour !", usageTip: "Common greeting." } }),
 };

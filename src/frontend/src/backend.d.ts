@@ -31,12 +31,30 @@ export interface Card {
     frontImage?: ExternalBlob;
     partOfSpeech?: string;
 }
+export interface TransformationOutput {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
 export interface AccessRequestView {
     id: bigint;
     requester: Principal;
     deckId: bigint;
     timestamp: bigint;
     requesterName: string;
+}
+export interface http_header {
+    value: string;
+    name: string;
+}
+export interface http_request_result {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
 }
 export interface PublicDeckInfo {
     title: string;
@@ -114,9 +132,22 @@ export interface backendInterface {
     requestDeckAccess(deckId: bigint): Promise<void>;
     saveStudySession(deckId: bigint, cardsStudied: bigint, correctCount: bigint, mode: string): Promise<void>;
     setDeckVisibility(deckId: bigint, visibility: Visibility): Promise<void>;
+    setOpenAIKey(key: string): Promise<void>;
     setProfile(username: string, displayName: string): Promise<void>;
     shareDeckWith(deckId: bigint, username: string): Promise<void>;
     toggleStarCard(deckId: bigint, cardId: bigint): Promise<boolean>;
+    transform(input: TransformationInput): Promise<TransformationOutput>;
+    translateText(frenchText: string): Promise<{
+        __kind__: "ok";
+        ok: {
+            exampleSentence: string;
+            usageTip: string;
+            translation: string;
+        };
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     unlikeDeck(deckId: bigint): Promise<void>;
     unshareDeckWith(deckId: bigint, target: Principal): Promise<void>;
     updateCard(deckId: bigint, cardId: bigint, front: string, back: string, pronunciation: string | null, partOfSpeech: string | null, exampleSentence: string | null, exampleTranslation: string | null): Promise<void>;

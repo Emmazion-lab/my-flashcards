@@ -1,9 +1,10 @@
 {
   "version": 3,
-  "mopsTomlDepsHash": "8bb1bcafc73170234b49b3ca58b6347030b74c71f1c5738d8c71ad212c7de3a6",
+  "mopsTomlDepsHash": "90de42822604d638e6b6a7a4a9be5bed598f51b4f71230c3066308e10fdb8f00",
   "deps": {
     "core": "2.2.0",
-    "caffeineai-object-storage": "0.1.2"
+    "caffeineai-object-storage": "0.1.2",
+    "caffeineai-http-outcalls": "0.1.1"
   },
   "hashes": {
     "core@2.2.0": {
@@ -70,6 +71,11 @@
       "caffeineai-object-storage@0.1.2/src/Storage.mo": "e4b61a9c3400f7d38f9b239451c37d81719889cbbf23a5a45bbd166c437500f5",
       "caffeineai-object-storage@0.1.2/mops.toml": "530718e8c2e82e9641f6feb4dfdf9beff590ef1a45b3ae2dbcdd9dce863e140a",
       "caffeineai-object-storage@0.1.2/src/Mixin.mo": "175c6b98672a83054fc08855062d1a7b7f2bd3713bf11a60d5319ac5afefe2b3"
+    },
+    "caffeineai-http-outcalls@0.1.1": {
+      "caffeineai-http-outcalls@0.1.1/mops.toml": "412e8919376cb4b2260c2bb830dc44a7c9092271b1082469da30f445d6e40e00",
+      "caffeineai-http-outcalls@0.1.1/README.md": "c8dd0ee7548ac60f5c82c6f5f0a517bbcb847e1e876b71351a5b174b9a46a3fd",
+      "caffeineai-http-outcalls@0.1.1/src/outcall.mo": "f5e1eec3b12a04244856f99358e8766a2b5eedc0bf8d9abbebe372c1a3eaca58"
     }
   }
 }

@@ -4,6 +4,52 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExternalBlob, Visibility } from "../backend";
 import { createActor } from "../backend";
 
+export interface TranslationResult {
+  translation: string;
+  exampleSentence: string;
+  usageTip: string;
+}
+
+export function useTranslateText() {
+  const { actor } = useActor(createActor);
+
+  return useMutation({
+    mutationFn: async ({
+      frenchText,
+    }: { frenchText: string }): Promise<TranslationResult> => {
+      if (!actor) throw new Error("Actor not ready");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = (await (actor as any).translateText(frenchText)) as {
+        ok?: { translation: string; exampleSentence: string; usageTip: string };
+        err?: string;
+      };
+      if (result.err !== undefined) throw new Error(result.err);
+      if (!result.ok) throw new Error("Empty translation result");
+      return {
+        translation: result.ok.translation,
+        exampleSentence: result.ok.exampleSentence,
+        usageTip: result.ok.usageTip,
+      };
+    },
+  });
+}
+
+export function useSetOpenAIKey() {
+  const { actor } = useActor(createActor);
+
+  return useMutation({
+    mutationFn: async ({ key }: { key: string }): Promise<void> => {
+      if (!actor) throw new Error("Actor not ready");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = (await (actor as any).setOpenAIKey(key)) as {
+        ok?: null;
+        err?: string;
+      };
+      if (result.err !== undefined) throw new Error(result.err);
+    },
+  });
+}
+
 export function useProfile() {
   const { actor, isFetching } = useActor(createActor);
   const { identity } = useInternetIdentity();

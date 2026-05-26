@@ -106,6 +106,11 @@ export interface Card {
     frontImage?: ExternalBlob;
     partOfSpeech?: string;
 }
+export interface TransformationOutput {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
 export interface AccessRequestView {
     id: bigint;
     requester: Principal;
@@ -115,6 +120,27 @@ export interface AccessRequestView {
 }
 export interface _ImmutableObjectStorageRefillInformation {
     proposed_top_up_amount?: bigint;
+}
+export interface _ImmutableObjectStorageCreateCertificateResult {
+    method: string;
+    blob_hash: string;
+}
+export interface http_header {
+    value: string;
+    name: string;
+}
+export interface _ImmutableObjectStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
+}
+export interface http_request_result {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
 }
 export interface PublicDeckInfo {
     title: string;
@@ -127,10 +153,6 @@ export interface PublicDeckInfo {
     category: string;
     likesCount: bigint;
     copyCount: bigint;
-}
-export interface _ImmutableObjectStorageCreateCertificateResult {
-    method: string;
-    blob_hash: string;
 }
 export interface StudySession {
     mode: string;
@@ -153,10 +175,6 @@ export interface UserProfile {
     username: string;
     displayName: string;
     seeded: boolean;
-}
-export interface _ImmutableObjectStorageRefillResult {
-    success?: boolean;
-    topped_up_amount?: bigint;
 }
 export enum Visibility {
     Private = "Private",
@@ -206,9 +224,22 @@ export interface backendInterface {
     requestDeckAccess(deckId: bigint): Promise<void>;
     saveStudySession(deckId: bigint, cardsStudied: bigint, correctCount: bigint, mode: string): Promise<void>;
     setDeckVisibility(deckId: bigint, visibility: Visibility): Promise<void>;
+    setOpenAIKey(key: string): Promise<void>;
     setProfile(username: string, displayName: string): Promise<void>;
     shareDeckWith(deckId: bigint, username: string): Promise<void>;
     toggleStarCard(deckId: bigint, cardId: bigint): Promise<boolean>;
+    transform(input: TransformationInput): Promise<TransformationOutput>;
+    translateText(frenchText: string): Promise<{
+        __kind__: "ok";
+        ok: {
+            exampleSentence: string;
+            usageTip: string;
+            translation: string;
+        };
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     unlikeDeck(deckId: bigint): Promise<void>;
     unshareDeckWith(deckId: bigint, target: Principal): Promise<void>;
     updateCard(deckId: bigint, cardId: bigint, front: string, back: string, pronunciation: string | null, partOfSpeech: string | null, exampleSentence: string | null, exampleTranslation: string | null): Promise<void>;
@@ -690,6 +721,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setOpenAIKey(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setOpenAIKey(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setOpenAIKey(arg0);
+            return result;
+        }
+    }
     async setProfile(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -730,6 +775,44 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.toggleStarCard(arg0, arg1);
             return result;
+        }
+    }
+    async transform(arg0: TransformationInput): Promise<TransformationOutput> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.transform(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.transform(arg0);
+            return result;
+        }
+    }
+    async translateText(arg0: string): Promise<{
+        __kind__: "ok";
+        ok: {
+            exampleSentence: string;
+            usageTip: string;
+            translation: string;
+        };
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.translateText(arg0);
+                return from_candid_variant_n27(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.translateText(arg0);
+            return from_candid_variant_n27(this._uploadFile, this._downloadFile, result);
         }
     }
     async unlikeDeck(arg0: bigint): Promise<void> {
@@ -777,14 +860,14 @@ export class Backend implements backendInterface {
     async updateCardImages(arg0: bigint, arg1: bigint, arg2: ExternalBlob | null, arg3: ExternalBlob | null): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateCardImages(arg0, arg1, await to_candid_opt_n27(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n27(this._uploadFile, this._downloadFile, arg3));
+                const result = await this.actor.updateCardImages(arg0, arg1, await to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateCardImages(arg0, arg1, await to_candid_opt_n27(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n27(this._uploadFile, this._downloadFile, arg3));
+            const result = await this.actor.updateCardImages(arg0, arg1, await to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3));
             return result;
         }
     }
@@ -927,13 +1010,40 @@ function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): Visibility {
     return "Private" in value ? Visibility.Private : "Public" in value ? Visibility.Public : value;
 }
+function from_candid_variant_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: {
+        exampleSentence: string;
+        usageTip: string;
+        translation: string;
+    };
+} | {
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: {
+        exampleSentence: string;
+        usageTip: string;
+        translation: string;
+    };
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: value.ok
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
+}
 async function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Card>): Promise<Array<Card>> {
     return await Promise.all(value.map(async (x)=>await from_candid_Card_n9(_uploadFile, _downloadFile, x)));
 }
 function from_candid_vec_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Deck>): Array<Deck> {
     return value.map((x)=>from_candid_Deck_n17(_uploadFile, _downloadFile, x));
 }
-async function to_candid_ExternalBlob_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
+async function to_candid_ExternalBlob_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob): Promise<_ExternalBlob> {
     return await _uploadFile(value);
 }
 function to_candid_Visibility_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Visibility): _Visibility {
@@ -945,8 +1055,8 @@ function to_candid__ImmutableObjectStorageRefillInformation_n2(_uploadFile: (fil
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ImmutableObjectStorageRefillInformation | null): [] | [__ImmutableObjectStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__ImmutableObjectStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
-async function to_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob | null): Promise<[] | [_ExternalBlob]> {
-    return value === null ? candid_none() : candid_some(await to_candid_ExternalBlob_n28(_uploadFile, _downloadFile, value));
+async function to_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ExternalBlob | null): Promise<[] | [_ExternalBlob]> {
+    return value === null ? candid_none() : candid_some(await to_candid_ExternalBlob_n29(_uploadFile, _downloadFile, value));
 }
 function to_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
     return value === null ? candid_none() : candid_some(value);

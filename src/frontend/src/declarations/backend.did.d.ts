@@ -64,6 +64,15 @@ export interface StudySession {
   'timestamp' : bigint,
   'correctCount' : bigint,
 }
+export interface TransformationInput {
+  'context' : Uint8Array,
+  'response' : http_request_result,
+}
+export interface TransformationOutput {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<http_header>,
+}
 export interface UserProfile {
   'username' : string,
   'displayName' : string,
@@ -81,6 +90,12 @@ export interface _ImmutableObjectStorageRefillInformation {
 export interface _ImmutableObjectStorageRefillResult {
   'success' : [] | [boolean],
   'topped_up_amount' : [] | [bigint],
+}
+export interface http_header { 'value' : string, 'name' : string }
+export interface http_request_result {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<http_header>,
 }
 export interface _SERVICE {
   '_immutableObjectStorageBlobsAreLive' : ActorMethod<
@@ -172,9 +187,22 @@ export interface _SERVICE {
   'requestDeckAccess' : ActorMethod<[bigint], undefined>,
   'saveStudySession' : ActorMethod<[bigint, bigint, bigint, string], undefined>,
   'setDeckVisibility' : ActorMethod<[bigint, Visibility], undefined>,
+  'setOpenAIKey' : ActorMethod<[string], undefined>,
   'setProfile' : ActorMethod<[string, string], undefined>,
   'shareDeckWith' : ActorMethod<[bigint, string], undefined>,
   'toggleStarCard' : ActorMethod<[bigint, bigint], boolean>,
+  'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
+  'translateText' : ActorMethod<
+    [string],
+    {
+        'ok' : {
+          'exampleSentence' : string,
+          'usageTip' : string,
+          'translation' : string,
+        }
+      } |
+      { 'err' : string }
+  >,
   'unlikeDeck' : ActorMethod<[bigint], undefined>,
   'unshareDeckWith' : ActorMethod<[bigint, Principal], undefined>,
   'updateCard' : ActorMethod<

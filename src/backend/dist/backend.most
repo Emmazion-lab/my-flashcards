@@ -55,6 +55,8 @@ type StudySession__500027106 =
     mode : Text;
     timestamp : Int
   };
+type TranslationResult__1054094998 =
+  {exampleSentence : Text; translation : Text; usageTip : Text};
 type UserProfile__491224006 =
   {displayName : Text; seeded : Bool; username : Text};
 type Visibility__140641055 = {#Private; #Public};
@@ -64,6 +66,7 @@ actor {
       var root : Node__46230540<Nat, AccessRequest__631173075>;
       var size : Nat__490723111
     };
+  stable aiAdminPrincipalState : {var value : ?Principal};
   stable deckCopyCount :
     {var root : Node__46230540<Nat, Nat>; var size : Nat__490723111};
   stable deckLikes :
@@ -89,11 +92,17 @@ actor {
     {var root : Node__46230540<Nat, Nat>; var size : Nat__490723111};
   stable var nextDeckId : Nat;
   stable var nextRequestId : Nat;
+  stable openAIKeyState : {var value : ?Text};
   stable publicDeckIndex :
     {var root : Node__46230540<Nat, Principal>; var size : Nat__490723111};
   stable seedPrincipal : Principal;
   stable seededUsers :
     {var root : Node__46230540<Principal, Bool>; var size : Nat__490723111};
+  stable translationCache :
+    {
+      var root : Node__46230540<Text, TranslationResult__1054094998>;
+      var size : Nat__490723111
+    };
   stable userDeckCards :
     {
       var root :
