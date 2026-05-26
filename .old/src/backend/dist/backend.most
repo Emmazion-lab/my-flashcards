@@ -1,0 +1,138 @@
+// Version: 1.0.0
+type AccessRequest__631173075 =
+  {deckId : Nat; id : Nat; requester : Principal; timestamp : Int};
+type Card__434522645 =
+  {
+    back : Text;
+    backImage : ?ExternalBlob__671167343;
+    exampleSentence : ?Text;
+    exampleTranslation : ?Text;
+    front : Text;
+    frontImage : ?ExternalBlob__671167343;
+    id : Nat;
+    partOfSpeech : ?Text;
+    position : Nat;
+    pronunciation : ?Text;
+    starred : Bool
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Deck__454371136 =
+  {
+    cardCount : Nat;
+    category : Text;
+    createdAt : Int;
+    description : Text;
+    id : Nat;
+    title : Text;
+    updatedAt : Int;
+    visibility : Visibility__140641055
+  };
+type ExternalBlob__671167343 = Blob;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type List__415060402<T> = List__790383201<T>;
+type List__790383201<T> =
+  {
+    var blockIndex : Nat__490723111;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__490723111
+  };
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type StudySession__500027106 =
+  {
+    cardsStudied : Nat;
+    correctCount : Nat;
+    deckId : Nat;
+    mode : Text;
+    timestamp : Int
+  };
+type UserProfile__491224006 =
+  {displayName : Text; seeded : Bool; username : Text};
+type Visibility__140641055 = {#Private; #Public};
+actor {
+  stable accessRequests :
+    {
+      var root : Node__46230540<Nat, AccessRequest__631173075>;
+      var size : Nat__490723111
+    };
+  stable deckCopyCount :
+    {var root : Node__46230540<Nat, Nat>; var size : Nat__490723111};
+  stable deckLikes :
+    {
+      var root : Node__46230540<Nat, Map__605269027<Principal, Bool>>;
+      var size : Nat__490723111
+    };
+  stable deckOwnerIndex :
+    {var root : Node__46230540<Nat, Principal>; var size : Nat__490723111};
+  stable deckShareList :
+    {
+      var root : Node__46230540<Nat, Map__605269027<Principal, Bool>>;
+      var size : Nat__490723111
+    };
+  stable maxBulkCards : Nat;
+  stable maxCardTextLength : Nat;
+  stable maxCardsPerDeck : Nat;
+  stable maxDescriptionLength : Nat;
+  stable maxSessionsPerDeck : Nat;
+  stable maxTitleLength : Nat;
+  stable var nextCardId : Nat;
+  stable nextCardPosition :
+    {var root : Node__46230540<Nat, Nat>; var size : Nat__490723111};
+  stable var nextDeckId : Nat;
+  stable var nextRequestId : Nat;
+  stable publicDeckIndex :
+    {var root : Node__46230540<Nat, Principal>; var size : Nat__490723111};
+  stable seedPrincipal : Principal;
+  stable seededUsers :
+    {var root : Node__46230540<Principal, Bool>; var size : Nat__490723111};
+  stable userDeckCards :
+    {
+      var root :
+        Node__46230540<Principal,
+                        Map__605269027<Nat,
+                                        Map__605269027<Nat, Card__434522645>>>;
+      var size : Nat__490723111
+    };
+  stable userDecks :
+    {
+      var root :
+        Node__46230540<Principal, Map__605269027<Nat, Deck__454371136>>;
+      var size : Nat__490723111
+    };
+  stable userLikedDecks :
+    {
+      var root : Node__46230540<Principal, Map__605269027<Nat, Bool>>;
+      var size : Nat__490723111
+    };
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable userSessions :
+    {
+      var root :
+        Node__46230540<Principal,
+                        Map__605269027<Nat,
+                                        List__415060402<StudySession__500027106>>>;
+      var size : Nat__490723111
+    };
+  stable userSharedDecks :
+    {
+      var root : Node__46230540<Principal, Map__605269027<Nat, Bool>>;
+      var size : Nat__490723111
+    };
+  stable usernameToUser :
+    {var root : Node__46230540<Text, Principal>; var size : Nat__490723111};
+  stable validCategories : [Text];
+  stable validModes : [Text]
+};

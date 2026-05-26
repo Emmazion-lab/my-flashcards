@@ -1,0 +1,23 @@
+{
+  "overview": "A mobile-first French vocabulary and phrases flashcard app. Add your own French words and phrases, study them with flip cards, quizzes, matching games, and writing practice — and track your progress over time.",
+  "features": [
+    "Create custom French vocabulary decks",
+    "Card fields: French term, English translation, phonetic pronunciation, part-of-speech, example sentence",
+    "5 study modes: flip cards, learn, test, match, write",
+    "Pre-loaded beginner French vocabulary and common phrases sample decks",
+    "Study session history with accuracy tracking",
+    "Mobile-first responsive design with French Tricolore color theme",
+    "Starred cards for focused review"
+  ],
+  "category": "education",
+  "tags": [
+    "french",
+    "language-learning",
+    "flashcards",
+    "vocabulary",
+    "mobile",
+    "education",
+    "spaced-repetition"
+  ],
+  "last_updated": "2026-05-06T12:31:45.345Z"
+}

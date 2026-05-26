@@ -1,0 +1,159 @@
+type _ImmutableObjectStorageRefillResult = 
+ record {
+   success: opt bool;
+   topped_up_amount: opt nat;
+ };
+type _ImmutableObjectStorageRefillInformation = record {
+                                                  proposed_top_up_amount:
+                                                   opt nat;};
+type _ImmutableObjectStorageCreateCertificateResult = 
+ record {
+   blob_hash: text;
+   method: text;
+ };
+type Visibility = 
+ variant {
+   Private;
+   Public;
+ };
+type UserProfile = 
+ record {
+   displayName: text;
+   seeded: bool;
+   username: text;
+ };
+type StudySession = 
+ record {
+   cardsStudied: nat;
+   correctCount: nat;
+   deckId: nat;
+   mode: text;
+   timestamp: int;
+ };
+type PublicDeckInfo = 
+ record {
+   cardCount: nat;
+   category: text;
+   copyCount: nat;
+   createdAt: int;
+   deckId: nat;
+   description: text;
+   likesCount: nat;
+   owner: principal;
+   ownerName: text;
+   title: text;
+ };
+type GetPublicDecksResult = 
+ record {
+   decks: vec PublicDeckInfo;
+   total: nat;
+ };
+type ExternalBlob = blob;
+type Deck = 
+ record {
+   cardCount: nat;
+   category: text;
+   createdAt: int;
+   description: text;
+   id: nat;
+   title: text;
+   updatedAt: int;
+   visibility: Visibility;
+ };
+type Card = 
+ record {
+   back: text;
+   backImage: opt ExternalBlob;
+   exampleSentence: opt text;
+   exampleTranslation: opt text;
+   front: text;
+   frontImage: opt ExternalBlob;
+   id: nat;
+   partOfSpeech: opt text;
+   position: nat;
+   pronunciation: opt text;
+   starred: bool;
+ };
+type AccessRequestView = 
+ record {
+   deckId: nat;
+   id: nat;
+   requester: principal;
+   requesterName: text;
+   timestamp: int;
+ };
+service : {
+  _immutableObjectStorageBlobsAreLive: (hashes: vec blob) -> (vec bool) query;
+  _immutableObjectStorageBlobsToDelete: () -> (vec blob) query;
+  _immutableObjectStorageConfirmBlobDeletion: (blobs: vec blob) -> ();
+  _immutableObjectStorageCreateCertificate: (blobHash: text) ->
+   (_ImmutableObjectStorageCreateCertificateResult);
+  _immutableObjectStorageRefillCashier: (refillInformation:
+   opt _ImmutableObjectStorageRefillInformation) ->
+   (_ImmutableObjectStorageRefillResult);
+  _immutableObjectStorageUpdateGatewayPrincipals: () -> ();
+  addCard: (deckId: nat, front: text, back: text, pronunciation: opt text,
+   partOfSpeech: opt text, exampleSentence: opt text, exampleTranslation:
+   opt text) -> (Card);
+  approveAccess: (deckId: nat, requester: principal) -> ();
+  bulkAddCards: (deckId: nat, cardPairs:
+   vec record {
+         text;
+         text;
+         opt text;
+         opt text;
+         opt text;
+         opt text;
+       }) -> (vec Card);
+  checkUsernameAvailability: (username: text) -> (bool) query;
+  createDeck: (title: text, description: text, category: text) -> (Deck);
+  deckExists: (deckId: nat) -> (bool) query;
+  deleteCard: (deckId: nat, cardId: nat) -> ();
+  deleteDeck: (deckId: nat) -> ();
+  duplicateDeck: (deckId: nat) -> (Deck);
+  findUserByName: (username: text) -> (opt principal) query;
+  getAccessRequests: (deckId: nat) -> (vec AccessRequestView) query;
+  getCards: (deckId: nat) -> (vec Card) query;
+  getDeck: (deckId: nat) -> (Deck) query;
+  getDeckSessions: (deckId: nat) -> (vec StudySession) query;
+  getMyDecks: () -> (vec Deck);
+  getProfile: () -> (opt UserProfile) query;
+  getPublicDeck: (deckId: nat) -> (opt PublicDeckInfo) query;
+  getPublicDecks: (search: opt text, category: opt text, sort: text, page:
+   nat, pageSize: nat) -> (GetPublicDecksResult) query;
+  getSharedDecks: () ->
+   (vec
+     record {
+       cardCount: nat;
+       category: text;
+       deckId: nat;
+       description: text;
+       ownerName: text;
+       title: text;
+     }) query;
+  getSharedUsers: (deckId: nat) ->
+   (vec record {
+          name: text;
+          "principal": principal;
+        }) query;
+  getUserLikes: () -> (vec nat) query;
+  isDeckOwner: (deckId: nat) -> (bool) query;
+  likeDeck: (deckId: nat) -> ();
+  rejectAccess: (deckId: nat, requester: principal) -> ();
+  requestDeckAccess: (deckId: nat) -> ();
+  saveStudySession: (deckId: nat, cardsStudied: nat, correctCount: nat, mode:
+   text) -> ();
+  setDeckVisibility: (deckId: nat, visibility: Visibility) -> ();
+  setProfile: (username: text, displayName: text) -> ();
+  shareDeckWith: (deckId: nat, username: text) -> ();
+  toggleStarCard: (deckId: nat, cardId: nat) -> (bool);
+  unlikeDeck: (deckId: nat) -> ();
+  unshareDeckWith: (deckId: nat, target: principal) -> ();
+  updateCard: (deckId: nat, cardId: nat, front: text, back: text,
+   pronunciation: opt text, partOfSpeech: opt text, exampleSentence:
+   opt text, exampleTranslation: opt text) -> ();
+  updateCardImages: (deckId: nat, cardId: nat, frontImage: opt ExternalBlob,
+   backImage: opt ExternalBlob) -> ();
+  updateDeck: (deckId: nat, title: text, description: text, category:
+   text) -> (Deck);
+}
